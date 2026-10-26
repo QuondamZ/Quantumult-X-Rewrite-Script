@@ -1,0 +1,30 @@
+# ==============================
+# emos 自动签到 · Quantumult X 版
+# 原作者：@xlzs001
+# 转换：Loon → QX
+# ==============================
+
+[MITM]
+hostname = %APPEND% emos.best, api.emos.best
+
+[rewrite_local]
+# ① 抓 Token（请求头）
+^https?:\/\/(api\.)?emos\.best\/api\/ script-request-header https://raw.githubusercontent.com/xlzs001/emos-loon-sign/main/scripts/emos-token-capture.js, tag=emos抓密钥
+
+# ② Token 重置同步（响应体）
+^https?:\/\/(api\.)?emos\.best\/api\/user\/resetToken script-response-body https://raw.githubusercontent.com/xlzs001/emos-loon-sign/main/scripts/emos-token-capture.js, tag=emos同步密钥
+
+[task_local]
+# ③ 每小时 :05 分检查签到
+5 * * * * https://raw.githubusercontent.com/xlzs001/emos-loon-sign/main/scripts/emos-sign.js, tag=emos定时签到
+
+[general]
+# ④ 手动操作（通过 QX「构造请求」或 UI 按钮）
+# 立即签到（跳过时间判断）
+resource = https://raw.githubusercontent.com/xlzs001/emos-loon-sign/main/scripts/emos-sign.js, tag=emos立即签到
+
+# 保存 Token
+resource = https://raw.githubusercontent.com/xlzs001/emos-loon-sign/main/scripts/emos-config.js, tag=emos保存Token
+
+# 查看账号
+resource = https://raw.githubusercontent.com/xlzs001/emos-loon-sign/main/scripts/emos-config.js, tag=emos查看账号, argument=list
